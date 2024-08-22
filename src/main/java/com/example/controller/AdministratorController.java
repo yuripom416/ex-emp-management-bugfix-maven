@@ -3,6 +3,7 @@ package com.example.controller;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -74,15 +75,26 @@ public class AdministratorController {
 	 * @return ログイン画面へリダイレクト
 	 */
 	@PostMapping("/insert")
-	public String insert(@Validated InsertAdministratorForm form, BindingResult result) {
+	public String insert(@Validated InsertAdministratorForm form, BindingResult result, Model model) {
 		if (result.hasErrors()) {
 			return "administrator/insert";
 		}
 		Administrator administrator = new Administrator();
 		// フォームからドメインにプロパティ値をコピー
 		BeanUtils.copyProperties(form, administrator);
-		administratorService.insert(administrator);
-		return "redirect:/";
+		Administrator admin = administratorService.findByMailAddress(administrator.getMailAddress());
+		if (admin != null) {
+			String mailErrorMessage = "入力したメールアドレスはすでに登録されています";
+			model.addAttribute("mailErrorMessage", mailErrorMessage);
+			return "administrator/insert";
+		} else if (!form.getPassword().equals(form.getConfirmPassword())) {
+			String passwordErrorMessage = "パスワードが一致していません";
+			model.addAttribute("passwordErrorMessage", passwordErrorMessage);
+			return "administrator/insert";
+		} else {
+			administratorService.insert(administrator);
+			return "redirect:/";
+		}
 	}
 
 	/////////////////////////////////////////////////////
