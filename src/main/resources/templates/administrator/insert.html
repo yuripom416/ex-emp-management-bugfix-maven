@@ -81,6 +81,11 @@
                   <div class="row">
                     <div class="col-sm-12">
                       <label for="mailAddress"> メールアドレス: </label>
+                      <label 
+                        th:if="${mailErrorMessage != null}" 
+                        class="error-messages" 
+                        th:text="${mailErrorMessage}">
+                      </label>
                       <label
                         th:errors="*{mailAddress}"
                         class="error-messages"
@@ -118,6 +123,29 @@
                         class="form-control"
                         placeholder="password"
                         th:field="*{password}"
+                        th:errorclass="error-input"
+                        value="xxxxxxxx"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <!-- 確認用パスワード -->
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <label for="confirmPassword"> 確認用パスワード: </label>
+                      <label 
+                        th:if="${passwordErrorMessage != null}" 
+                        class="error-messages" 
+                        th:text="${passwordErrorMessage}">
+                      </label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        id="confirmPassword"
+                        class="form-control"
+                        placeholder="password"
+                        th:field="*{confirmPassword}"
                         th:errorclass="error-input"
                         value="xxxxxxxx"
                       />

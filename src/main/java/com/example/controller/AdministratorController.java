@@ -3,7 +3,9 @@ package com.example.controller;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -74,15 +76,29 @@ public class AdministratorController {
 	 * @return ログイン画面へリダイレクト
 	 */
 	@PostMapping("/insert")
-	public String insert(@Validated InsertAdministratorForm form, BindingResult result) {
-		if (result.hasErrors()) {
-			return "administrator/insert";
-		}
+	public String insert(@Validated InsertAdministratorForm form, BindingResult result, Model model) {
 		Administrator administrator = new Administrator();
 		// フォームからドメインにプロパティ値をコピー
 		BeanUtils.copyProperties(form, administrator);
-		administratorService.insert(administrator);
-		return "redirect:/";
+		Administrator admin = administratorService.findByMailAddress(administrator.getMailAddress());
+		if (admin != null) {
+			String mailErrorMessage = "入力したメールアドレスはすでに登録されています";
+			model.addAttribute("mailErrorMessage", mailErrorMessage);
+			ObjectError objectError = new ObjectError(result.getObjectName(), mailErrorMessage);
+			result.addError(objectError);
+		}
+		if (!form.getPassword().equals(form.getConfirmPassword())) {
+			String passwordErrorMessage = "パスワードが一致していません";
+			model.addAttribute("passwordErrorMessage", passwordErrorMessage);
+			ObjectError objectError = new ObjectError(result.getObjectName(), passwordErrorMessage);
+			result.addError(objectError);
+		}
+		if (result.hasErrors()) {
+			return "administrator/insert";
+		} else {
+			administratorService.insert(administrator);
+			return "redirect:/";
+		}
 	}
 
 	/////////////////////////////////////////////////////
